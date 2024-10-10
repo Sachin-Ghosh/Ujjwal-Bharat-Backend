@@ -1,63 +1,46 @@
 const express = require('express');
 const vendorController = require('../controllers/vendorController');
-
 const router = express.Router();
 
-// Vendor registration
+// Authentication routes (assuming middleware exists)
 router.post('/register', vendorController.registerVendor);
 
-// Get all vendors with filtering, sorting, and field limiting
-router.get('/', vendorController.getAllVendors);
+// Profile management
+router.put('/:id/profile', vendorController.updateVendorProfile);
+router.patch('/:id/business-documents', vendorController.updateBusinessDocuments);
 
-// Get vendor by ID
-router.get('/:id', vendorController.getVendorById);
+// Inventory management
+router.post('/:id/inventory-request', vendorController.createInventoryRequest);
+router.get('/inventory/:id/inventory-summary', vendorController.getInventorySummary);
+router.patch('/:id/manage-inventory', vendorController.manageInventory);
 
-// Update vendor details by ID
-router.put('/:id', vendorController.updateVendor);
-
-// Delete vendor by ID
-router.delete('/:id', vendorController.deleteVendor);
-
-// Get vendor statistics
-router.get('/stats', vendorController.getVendorStats);
-
-// Update vendor registration status
-router.patch('/:id/registration-status', vendorController.updateRegistrationStatus);
-
-// Get top performing vendors
-router.get('/top', vendorController.getTopVendors);
-
-// Update vendor ratings
-router.patch('/:id/ratings', vendorController.updateVendorRatings);
-
-// Get vendor revenue analytics
+// Analytics and reporting
+router.get('/:id/analytics', vendorController.getVendorAnalytics);
+router.get('/:id/wallet-transactions', vendorController.getWalletTransactions);
 router.get('/:id/revenue', vendorController.getVendorRevenue);
-
-// Get vendor inventory summary
-router.get('/:id/inventory-summary', vendorController.getInventorySummary);
-
-// Update vendor business hours
-router.patch('/:id/business-hours', vendorController.updateBusinessHours);
-
-// Get vendor performance metrics
 router.get('/:id/performance-metrics', vendorController.getPerformanceMetrics);
-
-// Update vendor availability status
-router.patch('/:id/availability-status', vendorController.updateAvailabilityStatus);
-
-// Get vendor customer feedback
 router.get('/:id/customer-feedback', vendorController.getCustomerFeedback);
-
-// Update vendor delivery areas
-router.patch('/:id/delivery-areas', vendorController.updateDeliveryAreas);
-
-// Get vendor's best-selling products
 router.get('/:id/best-selling-products', vendorController.getBestSellingProducts);
 
-// View vendor's orders
+// Operational routes
+router.patch('/:id/business-hours', vendorController.updateBusinessHours);
+router.patch('/:id/availability-status', vendorController.updateAvailabilityStatus);
+
+// Order management
 router.get('/:id/orders', vendorController.viewOrders);
 
-// Manage inventory for a product
-router.post('/:id/manage-inventory', vendorController.manageInventory);
+// General CRUD operations
+router.get('/', vendorController.getAllVendors);
+router.get('/top', vendorController.getTopVendors);
+router.get('/stats', vendorController.getVendorStats);
+router.get('/:id', vendorController.getVendorById);
+router.put('/:id', vendorController.updateVendor);
+router.delete('/:id', vendorController.deleteVendor);
+
+// Admin routes
+router.patch('/:id/registration-status', vendorController.updateRegistrationStatus);
+router.patch('/:id/ratings', vendorController.updateVendorRatings);
+
+router.get('/vendor/:vendorId/profile', vendorController.getVendorProfileByVendorId);
 
 module.exports = router;

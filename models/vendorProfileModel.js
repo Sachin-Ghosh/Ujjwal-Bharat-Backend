@@ -1,8 +1,8 @@
+// models/vendorProfile.js
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
-const vendorProfileSchema = new Schema({
-    vendor: { type: Schema.Types.ObjectId, ref: 'Vendor', required: true },
+const vendorProfileSchema = new mongoose.Schema({
+    vendor: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor', required: true },
     businessWebsite: { type: String },
     businessEmail: { type: String },
     yearEstablished: { type: Number },
@@ -22,5 +22,6 @@ const vendorProfileSchema = new Schema({
     updatedAt: { type: Date, default: Date.now }
   });
   
-  module.exports = mongoose.model('VendorProfile', vendorProfileSchema);
+  const VendorProfile = mongoose.model('VendorProfile', vendorProfileSchema);
+module.exports = VendorProfile;
   
