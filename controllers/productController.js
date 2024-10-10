@@ -1,22 +1,47 @@
 const Product = require('../models/productModel');
 const Order = require('../models/orderModel');
 const Review = require('../models/reviewModel');
+const Inventory = require('../models/inventoryModel');
+const Vendor = require('../models/vendorModel');
+const Category = require('../models/categoryModel').Category;
+const SubCategory = require('../models/categoryModel').SubCategory;
 
 // Create a new product
 exports.createProduct = async (req, res) => {
-  try {
-    const product = await Product.create(req.body);
-    res.status(201).json({
-      status: 'success',
-      data: product
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: 'fail',
-      message: error.message
-    });
-  }
-};
+    try {
+        // console.log("Request Body:", req.body); // Log the request body
+
+      const vendor = await Vendor.findById(req.body.vendor);
+    //   console.log("Fetched Vendor:", vendor); // Log the fetched vendor object
+      if (!vendor || vendor.registrationStatus !== 'Approved') {
+        return res.status(400).json({
+          status: 'fail',
+          message: 'Invalid or unapproved vendor'
+        });
+      }
+  
+      const product = await Product.create(req.body);
+      
+      // Create inventory entry for the product
+      await Inventory.create({
+        product: product._id,
+        vendor: req.body.vendor,
+        currentStock: req.body.stock,
+        lowStockThreshold: req.body.lowStockThreshold || 10
+      });
+  
+      res.status(201).json({
+        status: 'success',
+        data: product
+      });
+    } catch (error) {
+      res.status(400).json({
+        status: 'fail',
+        message: error.message
+      });
+    }
+  };
+  
 
 // Get all products with filtering and sorting
 exports.getAllProducts = async (req, res) => {
@@ -470,3 +495,175 @@ exports.getProductSalesAnalytics = async (req, res) => {
       });
     }
   };
+
+//   Get product inventory
+exports.getProductInventory = async (req, res) => {
+  try {
+    const inventory = await Inventory.findOne({ product: req.params.id })
+      .populate('product')
+      .populate('vendor');
+
+    if (!inventory) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'No inventory found for this product'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: inventory
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: 'fail',
+      message: error.message
+    });
+  }
+};
+
+// New function: Get products by category
+exports.getProductsByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    
+    const products = await Product.find({ category: categoryId })
+      .populate('vendor')
+      .populate('category')
+      .populate('subcategory');
+
+    res.status(200).json({
+      status: 'success',
+      results: products.length,
+      data: products
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: 'fail',
+      message: error.message
+    });
+  }
+};
+
+// New function: Get products by subcategory
+exports.getProductsBySubcategory = async (req, res) => {
+  try {
+    const { subcategoryId } = req.params;
+    
+    const products = await Product.find({ subcategory: subcategoryId })
+      .populate('vendor')
+      .populate('category')
+      .populate('subcategory');
+
+    res.status(200).json({
+      status: 'success',
+      results: products.length,
+      data: products
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: 'fail',
+      message: error.message
+    });
+  }
+};
+
+// New function: Get trending products
+exports.getTrendingProducts = async (req, res) => {
+  try {
+    const trendingProducts = await Order.aggregate([
+      { $unwind: "$products" },
+      {
+        $group: {
+          _id: "$products.product",
+          totalSold: { $sum: "$products.quantity" }
+        }
+      },
+      { $sort: { totalSold: -1 } },
+      { $limit: 10 }
+    ]);
+
+    const productIds = trendingProducts.map(item => item._id);
+    const products = await Product.find({ _id: { $in: productIds } })
+      .populate('vendor')
+      .populate('category')
+      .populate('subcategory');
+
+    res.status(200).json({
+      status: 'success',
+      data: products
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: 'fail',
+      message: error.message
+    });
+  }
+};
+
+// New function: Get new arrivals
+exports.getNewArrivals = async (req, res) => {
+  try {
+    const newArrivals = await Product.find()
+      .sort('-createdAt')
+      .limit(10)
+      .populate('vendor')
+      .populate('category')
+      .populate('subcategory');
+
+    res.status(200).json({
+      status: 'success',
+      data: newArrivals
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: 'fail',
+      message: error.message
+    });
+  }
+};
+
+// Update product review stats
+exports.updateProductReviewStats = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    
+    const stats = await Review.aggregate([
+      { $match: { product: productId } },
+      {
+        $group: {
+          _id: null,
+          avgRating: { $avg: "$rating" },
+          numReviews: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const updateData = stats.length > 0
+      ? { rating: stats[0].avgRating, $push: { reviews: req.body.reviewId } }
+      : { rating: 0, reviews: [] };
+
+    const product = await Product.findByIdAndUpdate(
+      productId,
+      updateData,
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'No product found with that ID'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: product
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: 'fail',
+      message: error.message
+    });
+  }
+};

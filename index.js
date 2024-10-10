@@ -12,6 +12,7 @@ require('./cronJob');
 // Import route files
 // const userRoutes = require('./routes/userRoutes');
 const vendorRoutes = require('./routes/vendorRoutes');
+const productRoutes = require('./routes/productRoutes');
 
 
 
@@ -40,6 +41,7 @@ app.use(bodyParser.json());
 // Routes
 // app.use('/api/users', userRoutes);
 app.use('/api/vendors', vendorRoutes);
+app.use('/api/products', productRoutes);
 
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
