@@ -7,7 +7,7 @@ const cartSchema = new Schema({
       product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
       quantity: { type: Number, required: true }
     }],
-    totalAmount: { type: Number, required: true },
+    totalAmount: { type: Number },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
   });

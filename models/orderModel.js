@@ -11,14 +11,25 @@ const orderSchema = new Schema({
       price: { type: Number, required: true }
     }],
     totalAmount: { type: Number, required: true },
-    paymentStatus: { type: String, enum: ['Pending', 'Paid', 'Refunded'], default: 'Pending' },
+    paymentStatus: { type: String, enum: ['Pending', 'Paid', 'Refunded', 'FAILED'], default: 'Pending' },
     shippingAddress: {
-      address: { type: String, required: true },
+        addressLine1: { type: String, required: true },
+        addressLine2: { type: String },
       city: { type: String, required: true },
       state: { type: String, required: true },
       zip: { type: String, required: true },
       country: { type: String, required: true }
     },
+    paymentMethod: {
+        type: String,
+        enum: ['WALLET', 'COD'],
+        required: true
+      },
+      cancellationRequested: {
+        type: Boolean,
+        default: false
+      },
+      cancellationReason: { type: String },
     deliveryStatus: { type: String, enum: ['Processing', 'Shipped', 'Delivered', 'Cancelled', 'Returned'], default: 'Processing' },
     shippingMethod: { type: String },
     orderDate: { type: Date, default: Date.now },

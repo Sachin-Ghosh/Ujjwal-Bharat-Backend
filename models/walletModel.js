@@ -6,12 +6,9 @@ const walletSchema = new Schema({
     ownerModel: { type: String, enum: ['User', 'Vendor'], required: true },  // Discriminator for User or Vendor model
     balance: { type: Number, default: 0 },
     transactions: [{
-      type: { type: String, enum: ['Credit', 'Debit'], required: true },
-      amount: { type: Number, required: true },
-      date: { type: Date, default: Date.now },
-      paymentReference: { type: Schema.Types.ObjectId, ref: 'Payment' },  // Link to the Payment model
-      remarks: { type: String }
-    }],
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Transaction'
+      }],
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
   });

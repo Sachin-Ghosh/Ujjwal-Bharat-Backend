@@ -116,12 +116,11 @@ exports.getAllVendors = async (req, res) => {
 // Get vendor by ID
 exports.getVendorById = async (req, res) => {
   try {
-    const vendor = await Vendor.findById(req.params.id).populate('profile');
-    
-    //   .populate('inventory')
-    //   .populate('orders')
-    //   .populate('wallet')
-    //   .populate('communication');
+    const vendor = await Vendor.findById(req.params.id).populate('profile')
+      .populate('inventory')
+      .populate('orders')
+      .populate('wallet')
+      .populate('communication');
 
     if (!vendor) {
       return res.status(404).json({ 

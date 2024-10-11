@@ -34,6 +34,41 @@ const userSchema = new Schema({
       type: { type: String },
       details: { type: String }
     }],
+    dateOfBirth: { type: Date },
+  gender: { type: String, enum: ['Male', 'Female', 'Other', 'Prefer not to say'] },
+//   preferences: {
+//     notifications: {
+//       email: { type: Boolean, default: true },
+//       sms: { type: Boolean, default: true },
+//       push: { type: Boolean, default: true }
+//     },
+//     newsletter: { type: Boolean, default: false },
+//     language: { type: String, default: 'en' }
+//   },
+  socialProfiles: {
+    facebook: { type: String },
+    twitter: { type: String },
+    instagram: { type: String }
+  },
+  recentlyViewed: [{
+    product: { type: Schema.Types.ObjectId, ref: 'Product' },
+    viewedAt: { type: Date, default: Date.now }
+  }],
+//   deviceTokens: [{ type: String }], // For push notifications
+//   referralCode: { type: String, unique: true },
+//   referredBy: { type: Schema.Types.ObjectId, ref: 'User' },
+//   loyaltyPoints: { type: Number, default: 0 },
+  accountStatus: {
+    type: String,
+    enum: ['Active', 'Inactive', 'Suspended', 'Deleted'],
+    default: 'Active'
+  },
+  lastLoginDate: { type: Date },
+  loginHistory: [{
+    date: { type: Date },
+    ipAddress: { type: String },
+    deviceInfo: { type: String }
+  }],
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
   });
