@@ -13,6 +13,7 @@ require('./cronJob');
 // const userRoutes = require('./routes/userRoutes');
 const vendorRoutes = require('./routes/vendorRoutes');
 const productRoutes = require('./routes/productRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 
 
@@ -42,6 +43,12 @@ app.use(bodyParser.json());
 // app.use('/api/users', userRoutes);
 app.use('/api/vendors', vendorRoutes);
 app.use('/api/products', productRoutes);
+
+
+
+//admin
+app.use('/api/admin', adminRoutes);
+
 
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

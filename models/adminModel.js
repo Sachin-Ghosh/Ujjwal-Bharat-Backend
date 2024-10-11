@@ -9,7 +9,7 @@ const adminSchema = new Schema({
         unique: true,
         trim: true,
         lowercase: true,
-        match: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, // Email validation
+        match: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         required: true,
     },
     password: {
@@ -17,17 +17,54 @@ const adminSchema = new Schema({
         required: true,
         select: false,
     },
-    permissions: [{ type: String }],  // e.g., 'View Orders', 'Approve Vendors'
+    role: {
+        type: String,
+        enum: ['super_admin', 'admin', 'moderator'],
+        default: 'admin'
+    },
+    permissions: {
+        users: {
+            create: { type: Boolean, default: false },
+            read: { type: Boolean, default: true },
+            update: { type: Boolean, default: false },
+            delete: { type: Boolean, default: false }
+        },
+        vendors: {
+            create: { type: Boolean, default: false },
+            read: { type: Boolean, default: true },
+            update: { type: Boolean, default: false },
+            delete: { type: Boolean, default: false },
+            approve: { type: Boolean, default: false }
+        },
+        products: {
+            create: { type: Boolean, default: false },
+            read: { type: Boolean, default: true },
+            update: { type: Boolean, default: false },
+            delete: { type: Boolean, default: false }
+        },
+        orders: {
+            read: { type: Boolean, default: true },
+            update: { type: Boolean, default: false },
+            cancel: { type: Boolean, default: false }
+        },
+        categories: {
+            create: { type: Boolean, default: false },
+            read: { type: Boolean, default: true },
+            update: { type: Boolean, default: false },
+            delete: { type: Boolean, default: false }
+        },
+        analytics: { type: Boolean, default: false }
+    },
+    lastLogin: { type: Date },
+    isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
-  });
-  
+});
 
-  adminSchema.methods.matchPassword = async function (enteredPassword) {
+adminSchema.methods.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Hash password before saving admin
 adminSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
         next();
@@ -35,5 +72,30 @@ adminSchema.pre('save', async function (next) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
 });
-  module.exports = mongoose.model('Admin', adminSchema);
-  
+
+// Automatically give super admins full permissions
+adminSchema.pre('save', function (next) {
+    if (this.role === 'super_admin') {
+        this.permissions = {
+            users: {
+                create: true, read: true, update: true, delete: true
+            },
+            vendors: {
+                create: true, read: true, update: true, delete: true, approve: true
+            },
+            products: {
+                create: true, read: true, update: true, delete: true
+            },
+            orders: {
+                read: true, update: true, cancel: true
+            },
+            categories: {
+                create: true, read: true, update: true, delete: true
+            },
+            analytics: true
+        };
+    }
+    next();
+});
+
+module.exports = mongoose.model('Admin', adminSchema);
